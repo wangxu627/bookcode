@@ -1,0 +1,49 @@
+<!-- Main Content -->
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-md-10 mx-auto">
+      {{#each articles}}
+        <div class="post-preview">
+          <a href="post.html">
+            <h2 class="post-title">
+              {{title}}
+            </h2>
+            <h3 class="post-subtitle">
+              {{content}}
+            </h3>
+            {{#if imgs}}
+            <div class="container">
+              {{#equals imgs/length 1}}
+                <img src="img/res/20180122151143.jpg" style="max-width:100%"/>
+              {{else}}
+                <div class="row" style="margin-bottom:5px">
+                  <div class="col-xs-4 col-sm-3 col-md-2">
+                    <div style="max-width: 100%;background-color:aqua;height:120px;"></div>
+                  </div>
+                  <div class="col-xs-4 col-sm-3 col-md-2">
+                    <div style="max-width: 100%;background-color:aqua;height:120px;"></div>
+                  </div>
+                  <div class="col-xs-4 col-sm-3 col-md-2">
+                    <div style="max-width: 100%;background-color:aqua;height:120px;"></div>
+                  </div>
+                </div>
+              {{/equals}}
+            </div>
+            {{/if}}
+          </a>
+          <p class="post-meta">Posted by
+            <a href="#">Start Bootstrap</a>
+            on September 24, 2018</p>
+        </div>
+        <hr>
+      {{/each}}
+
+      <!-- Pager -->
+      <div class="clearfix">
+        <a class="btn btn-primary float-right" href="#">Older Posts &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+ 

@@ -3,6 +3,7 @@ var eh = require("express-handlebars");
 var bodyParser = require("body-parser");
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
+var multer = require("multer");
 var moments = require("./moments");
 
 handlebars = eh.create({
@@ -32,12 +33,15 @@ app.set("port", 3000);
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
+
 app.use(cookieParser('session'));
 app.use(session({
     secret: 'session',//与cookieParser中的一致
     resave: true,
     saveUninitialized:true
 }));
+
+var upload = multer({ dest: 'upload/' });
 
 app.get("/", function(req, res) {
     var articles = moments.getArticles();
@@ -57,10 +61,18 @@ app.get("/login_wx", function(req, res) {
     res.render("login_wx");
 });
 app.get("/post", function(req, res) {
-    res.render("post_m", {
-        layout:null
-    });
-})
+    // res.render("post_m", {
+    //     layout:null
+    // });
+    res.render("post");
+});
+app.post("/uploadPic", upload.single('wangxu'), function(req, res) {
+    console.log("+=======================>>> : ");
+    console.log(req.body);
+    console.log(req.files);
+    res.end("ok");
+});
+
 app.post("/signin", function(req, res) {
     console.log("req ::::: " + JSON.stringify(req.body));
     if(req.body.username == "wangxu" && req.body.password == "123456") {

@@ -1,0 +1,43 @@
+<script type="text/javascript">
+  function login() {
+    fetch('/signin', {
+      method: 'POST',
+      headers: {
+        'content-type':'application/json'
+      },
+      body: JSON.stringify({
+        username: $("#inputName").val(),
+        password: $("#inputPassword").val()
+      }),
+      credentials: "include",
+    }).then(function (res) {　　
+      console.log(res);
+      if(res.status == 200) {
+         window.location.href = res.url;
+      } else {
+        return res.text();
+      }
+    }).then(function (text) {
+      console.log(text);
+    });
+    return false;
+  }
+</script>
+
+<div class="container">
+  <div class="row">
+    <form class="form-signin" method="post" action="signin" onsubmit="return login()">
+        <h2 class="form-signin-heading">Please sign in</h2>
+        <label for="inputUsername" class="sr-only">Username</label>
+        <input type="text" id="inputName" name="username" class="form-control" placeholder="Username" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="remember-me"> Remember me
+          </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+  </div>
+</div>

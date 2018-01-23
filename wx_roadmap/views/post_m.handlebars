@@ -1,0 +1,225 @@
+{{!-- <!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <link href="css/base.css" rel="stylesheet">
+
+    <style>
+        .m-reles-top {
+            padding: .65625rem .6rem;
+            text-align: center;
+        }
+        .m-reles-con {
+            overflow-y: auto;
+            padding: 0 .6rem;
+        }
+
+        .m-pos-r {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+
+        .m-justify-bet {
+            -webkit-box-pack: justify;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+        }
+
+        .m-fd-row,
+        .m-fdr-jcsbet {
+            -webkit-box-orient: horizontal;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .m-aln-center {
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+        }
+
+        .m-lim-width {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .m-box-model {
+            -webkit-box-align: stretch;
+            -ms-flex-align: stretch;
+            align-items: stretch;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -ms-flex-negative: 0;
+            flex-shrink: 0;
+            -webkit-box-pack: start;
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+            position: relative;
+        }
+        .m-reles-nr span {
+            width: 100%;
+            font-weight: 300;
+            font-size: 1.25rem;
+            line-height: 1.5em;
+        }
+
+        .m-wz-def {
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.3125;
+            word-wrap: break-word;
+        }
+
+        .m-fcb-col {
+            padding: .65625rem .6rem;
+        }
+
+        .m-fd-row, .m-fdr-jcsbet {
+            -webkit-box-orient: horizontal;
+            -webkit-box-direction: normal;
+            -ms-flex-direction: row;
+            flex-direction: row;
+        }
+
+        .m-reles-nr span {
+            width: 100%;
+            font-weight: 300;
+            font-size: 1.25rem;
+            line-height: 1.5em;
+        }
+
+        .m-wz-def {
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.3125;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body class="android hb-loaded">
+    <div id="app" class="m-container-max">
+        <div class="m-pos-f m-box-model m-main">
+            <header class="m-box-model m-fd-row m-reles-top m-justify-bet m-aln-center m-lim-width">
+                <div class="m-box m-flex-grow1 m-alnf-sth m-aln-center m-flex-base0">
+                    <i class="m-font m-font-close"></i>
+                </div>
+                <div class="m-box m-box-model m-flex-grow1 m-aln-center m-flex-base0">
+                    <img alt="" src="https://tva1.sinaimg.cn/crop.0.0.180.180.180/444917d2jw1e8qgp5bmzyj2050050aa8.jpg" class="m-ruser-img">
+                </div>
+                <div class="m-box m-flex-grow1 m-box-model m-fd-row m-aln-center m-justify-end m-flex-base0">
+                    <span class="m-reles-fnum m-wz-def">6</span>
+                    <a class="m-btn m-send-btn m-btn-orange">
+                        发送
+                    </a>
+                </div>
+            </header>
+            <main class="m-reles-con m-lim-width m-box-model m-flex-shrink1 m-flex-grow1">
+                <div class="m-box-model m-pos-r" draggable="true">
+                    <div class="m-box-model m-fd-row m-reles-nr">
+                        <span class="m-wz-def">
+                            <textarea placeholder="分享新鲜事…" style="height: 58px;"></textarea>
+                            <textarea rows="3" style="position: absolute; z-index: -9999; visibility: hidden;"></textarea>
+                        </span>
+                    </div>
+                </div>
+                <div data-v-5ada7346="">
+                    <div data-v-5ada7346="" class="image-list">
+                        <!---->
+                    </div>
+                    <input data-v-5ada7346="" id="selectphoto" type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/bmp" multiple="multiple"
+                        class="m-rfile">
+                </div>
+                <!---->
+            </main>
+            <footer class="m-box-model m-lim-width">
+                <div class="m-fcb-col m-fd-row m-box-model">
+                    <!---->
+                    <div style="flex: 1 1 0%;"></div>
+                    <div class="visible">
+                        <h4 class="iconf iconf_compose_earth">公开</h4>
+                    </div>
+                </div>
+                <div class="compose-footer m-fd-row">
+                    <div class="compose-footer-box m-ctrl-box m-box-center-a">
+                        <label for="selectphoto" class="m-diy-btn m-box-col m-box-center m-box-center-a">
+                            <h4 class="iconf iconf_compose_photo"></h4>
+                        </label>
+                        <div class="m-diy-btn m-box-col m-box-center m-box-center-a">
+                            <h4 class="iconf iconf_compose_contact"></h4>
+                        </div>
+                        <div class="m-diy-btn m-box-col m-box-center m-box-center-a">
+                            <h4 class="iconf iconf_compose_topic"></h4>
+                        </div>
+                        <div class="m-diy-btn m-box-col m-box-center m-box-center-a">
+                            <h4 class="iconf iconf_compose_emotion"></h4>
+                        </div>
+                    </div>
+                    <!---->
+                </div>
+            </footer>
+        </div>
+    </div>
+</body>
+
+</html> --}}
+
+<html>
+    <head>
+        <style>
+            header {
+                height: 80px;
+                background-color: red
+            }
+
+            main {
+                height: auto;
+                width: 100%;
+                background-color: yellow
+            }
+
+            footer {
+                height: 120px;
+                background-color: green;
+                margin:0;
+            }
+
+            .m-container-max {
+                height: 100%;
+            }
+
+            textarea {
+                margin-top: .65625rem;
+                background-color: transparent;
+                outline: 0;
+                border: none;
+                font-size: 1rem;
+                resize: none;
+                width: 100%;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+                -webkit-appearance: none!important;
+                -moz-appearance: none!important;
+            }
+
+        </style>
+    </head>
+    <body style="height:100%;margin:0;overflow:auto;">
+        <header></header>
+        <main>
+            <textarea placeholder="分享新鲜事…" style="height: 58px;width:100%"></textarea>
+        </main>
+        <footer></footer>
+    </body>
+</html>

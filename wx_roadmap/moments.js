@@ -4,7 +4,7 @@ function getArticles() {
             "title":"11111111111111",
             "content":"vvvvvvvvvv1111111111",
             "singleImg":true,
-            "imgs":[1,2],
+            "imgs":[1,2,3],
         },
         {
             "title":"22222222222222",
@@ -18,7 +18,7 @@ function getArticles() {
         {
             "title":"44444444444444",
             "content":"vvvvvvvvvv444444444",
-            "imgs":[1,2],
+            "imgs":[1,2,3,4,5,6,7,8,9],
         },
         {
             "title":"55555555555555",

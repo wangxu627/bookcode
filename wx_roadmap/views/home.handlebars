@@ -1,7 +1,7 @@
 <!-- Main Content -->
 <div class="container">
   <div class="row">
-    <div class="col-lg-8 col-md-10 mx-auto">
+    <div class="col-lg-8 col-md-10 col-xs-11 mx-auto">
       {{#each articles}}
         <div class="post-preview">
           <a href="post.html">
@@ -16,16 +16,14 @@
               {{#equals imgs/length 1}}
                 <img src="img/res/20180122151143.jpg" style="max-width:100%"/>
               {{else}}
-                <div class="row" style="margin-bottom:5px">
-                  <div class="col-xs-4 col-sm-3 col-md-2">
-                    <div style="max-width: 100%;background-color:aqua;height:120px;"></div>
+                 <div class="row col-xs-12 col-sm-10 col-md-8" >
+                  {{#each imgs}}
+                  <div class="col-xs-4 col-sm-4 col-md-4" style="padding-left:5px;padding-right:0px;padding-bottom:5px">
+                    <div style="width: 100%;height: 0px;padding-bottom: 100%;overflow:hidden;margin: 0;position:relative;
+                        background-image: url(img/res/20180122151149.jpg);background-size: cover;background-position:center center">
+                    </div>
                   </div>
-                  <div class="col-xs-4 col-sm-3 col-md-2">
-                    <div style="max-width: 100%;background-color:aqua;height:120px;"></div>
-                  </div>
-                  <div class="col-xs-4 col-sm-3 col-md-2">
-                    <div style="max-width: 100%;background-color:aqua;height:120px;"></div>
-                  </div>
+                  {{/each}}
                 </div>
               {{/equals}}
             </div>

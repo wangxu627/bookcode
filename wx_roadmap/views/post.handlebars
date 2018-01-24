@@ -1,45 +1,72 @@
 <script type="text/javascript">
-  function openFile() {
-    console.log("AAAAAAAAAAAAAAAAAAAAAAA");
-    $("#realUploadBtn").on("change", (event, ...args)=>{
-      console.log($("#realUploadBtn").val());
+  var uploadedIds = [];
 
-      var formData = new FormData();
-      //formData.append("myfile", $("#realUploadBtn"));   
-     // {{!-- var name = $("input").val(); --}}
-      formData.append("file",$("#realUploadBtn")[0].files[0]);
-      formData.append("name","wangxu");
-      $.ajax({
+  function uploadPic() {
+    $("#realUploadBtn").one("change", (event, ...args)=>{
+      console.log($("#realUploadBtn").val());
+      //alert("需要消耗流量");
+      for(var i = 0;i < $("#realUploadBtn")[0].files.length;i++) {
+        var formData = new FormData();
+        formData.append("file",$("#realUploadBtn")[0].files[i]);
+        $.ajax({
           url: "/uploadPic",
           type: "POST",
           data: formData,
-          /**
-          *必须false才会自动加上正确的Content-Type
-          */
           contentType: false,
-          /**
-          * 必须false才会避开jQuery对 formdata 的默认处理
-          * XMLHttpRequest会对 formdata 进行正确的处理
-          */
           processData: false,
           success: function (data) {
-              if (data.status == "true") {
-                  alert("上传成功！");
-              }
-              if (data.status == "error") {
-                  alert(data.msg);
-              }
+            data = JSON.parse(data);
+            uploadedIds.push(data.pic_id);
+            $("#imgSingle").children().css("background-image", data.thumbnail_pic);
+            var newObj = $("#imgSingle").clone(true, true);
+            {{!-- console.log(data); --}}
+            newObj.id = "imgSingle1";
+            newObj.css("visibility","visible");
+            newObj.css("height", "auto");
+            newObj.css("position", "relative");
+            console.log("http://localhost:3000/upload/thumbnail/d1f768663683fee1d16f3eef65b95c76.jpg");
+            console.log(data.thumbnail_pic);
+            newObj.children().first().css("background-image", "url(" + data.thumbnail_pic + ")");
+            $("#imgPanel").append(newObj);
           },
           error: function () {
-              alert("上传失败！");
+            alert("上传失败！");
           }
-      });
+        });
+      }
     });
     $("#realUploadBtn").click();
   }
 
+  function removePic(obj) {
+    var idx = $(obj).parent().index();
+    uploadedIds.splice(idx, 1);
+    $(obj).parent().remove();
+    //uploadedIds.push(data.pic_id);
+  }
+
   function postMoment() {
     console.log("BVBBBBBBBBBBBBBBBBBBBB"); 
+    fetch('/commit', {
+      method: 'POST',
+      headers: {
+        'content-type':'application/json'
+      },
+      body: JSON.stringify({
+        content: $("#textContent").val(),
+        pic_ids: uploadedIds
+      }),
+      credentials: "include",
+    }).then(function (res) {　　
+      console.log(res);
+      if(res.status == 200) {
+        uploadedIds = [];
+        window.location.href = res.url;
+      } else {
+        alert("commit failed");
+      }
+    });
+    return false;
   }
 </script>
 
@@ -47,16 +74,22 @@
 <div class="container">
   <div class="row">
     <div class="col-lg-8 col-md-10 col-xs-12 mx-auto" style="margin:-40px 0px 0px;padding:0px 5px">
-      {{!-- <textarea rows="3" cols="20"/> --}}
-      <div style="width:100%;height:120px;margin:0px 0px 5px">
-        <textarea class="form-control" style="width:100%;height:100%;border-style:none;resize:none;margin:0" placeholder="今天要说点啥..."></textarea> 
+      <div style="width:100%;height:80px;margin:0px 0px 5px">
+        <textarea id="textContent" class="form-control" style="width:100%;height:100%;border-style:none;resize:none;margin:0" placeholder="今天要说点啥..."></textarea> 
       </div>
-      {{!-- <div style="width:100%;height:50px"> 
-          
-      </div> --}}
+      <div id="imgPanel" class="col-xs-12 col-sm-10 col-md-8" style="height:auto">
+      </div>
+      <div id="imgSingle" class="col-xs-4 col-sm-4 col-md-4" style="padding:0px 5px 5px 0px;height:0px;position:absolute;visibility:hidden" align="center">
+        <div style="width: 100%;height: 0px;padding-bottom: 100%;overflow:hidden;margin: 0;position:relative;
+                background-image: url(http://localhost:3000/upload/thumbnail/919c79d9bc9520b6036807a034f97e40.jpg);background-size: cover;background-position:center center">
+        </div>
+        <div style="z-index:1;width:20px;height:20px;background-image: url(img/res/close_btn.png);
+                  background-size: cover;background-position:center center;position:absolute;left:90px;top:-10px;" onclick="removePic(this)">
+        </div>
+      </div>
       <div>
-        <input id="realUploadBtn" type="file" accept="image/*" tabindex="-1" style="visibility:collapse;height:0px">
-        <img src="img/timg.jpg" class="img-thumbnail" style="width:40px;height:40px" onclick="openFile()"/>
+        <input id="realUploadBtn" name="wangxu" type="file" accept="image/*" multiple="true" tabindex="-1" style="visibility:collapse;height:0px">
+        <img src="img/timg.jpg" class="img-thumbnail" style="width:40px;height:40px" onclick="uploadPic()"/>
         <button class="btn btn-primary btn-xs pull-right" style="padding: 10px 30px" type="button" onclick="postMoment()">发布</button>
       </div>
     </div>

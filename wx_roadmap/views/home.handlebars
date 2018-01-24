@@ -5,16 +5,17 @@
       {{#each articles}}
       <div class="post-preview">
         <a href="post.html">
-          <h2 class="post-title">
+          {{!-- <h2 class="post-title">
             {{title}}
-          </h2>
-          <h3 class="post-subtitle">
+          </h2> --}}
+          <h3 class="post-subtitle" style="font-size: 18px">
             {{content}}
           </h3>
           {{#if imgs}}
           <div class="container">
             {{#equals imgs/length 1}}
-            <img src="img/res/20180122151143.jpg" style="max-width:100%" /> {{else}}
+            <img src="img/res/20180122151143.jpg" style="max-width:80%" /> 
+            {{else}}
             <div class="row col-xs-12 col-sm-10 col-md-8">
               {{#each imgs}}
               <div class="col-xs-4 col-sm-4 col-md-4" style="padding-left:5px;padding-right:0px;padding-bottom:5px">
@@ -28,8 +29,7 @@
           </div>
           {{/if}}
         </a>
-        <p class="post-meta">Posted by
-          <a href="#">Start Bootstrap</a>
+        <p class="post-meta">
           on September 24, 2018</p>
       </div>
       <hr> {{/each}}

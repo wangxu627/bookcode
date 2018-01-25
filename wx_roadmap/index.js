@@ -72,24 +72,45 @@ var upload = multer({storage: storage});
 app.get("/", function(req, res) {
     var articles = moments_old.getArticles();
     
-    moments.getAllMoments((_err, _res) => {
-        let momentsData = _res.map((item,index,input) => {
-            let pics = item.pictures.split(",");
-            pics.forEach((element, index, array) => {
-                pictures.getPicturesById(element, (_errPic, _resPic) => {
-                    if(pics.length > 1) {
-                        if(_resPic.length > 0) {
-                            array[index] = _resPic[0].thumbnail;
-                        }
-                    } else {
-                        if(_resPic.length > 0) {
-                            array[index] = _resPic[0].original;
-                        }
-                    }
+    // moments.getAllMoments((_err, _res) => {
+    //     let momentsData = _res.map((item,index,input) => {
+    //         let pics = item.pictures.split(",");
+    //         pics.forEach((element, index, array) => {
+    //             pictures.getPicturesById(element, (_errPic, _resPic) => {
+    //                 if(pics.length > 1) {
+    //                     if(_resPic.length > 0) {
+    //                         array[index] = _resPic[0].thumbnail;
+    //                     }
+    //                 } else {
+    //                     if(_resPic.length > 0) {
+    //                         array[index] = _resPic[0].original;
+    //                     }
+    //                 }
                    
-                });
-            });
+    //             });
+    //         });
             
+    //         let data = {
+    //             _id : item._id,
+    //             content : item.content,
+    //             pictures : pics,
+    //             __v : 0
+    //         };
+    //         return data;
+    //     });
+
+    //     setTimeout(()=>{
+    //         console.log(momentsData);
+    //         res.render("home", {
+    //             articles : momentsData
+    //         });
+    //     }, 800);
+    // });
+
+    let p = moments.getAllMoments();
+    p.then((_res) => {
+        let momentsData = _res.map((item,index) => {
+            let pics = item.pictures.split(",");
             let data = {
                 _id : item._id,
                 content : item.content,
@@ -98,15 +119,41 @@ app.get("/", function(req, res) {
             };
             return data;
         });
-
-        setTimeout(()=>{
-            console.log(momentsData);
-            res.render("home", {
-                articles : momentsData
-            });
-        }, 800);
-    });
-
+        return momentsData;
+    }).then((momentsData)=> {
+        let arr = [];
+        for(let i = 0;i < momentsData.length;i++) {
+            for(let j = 0;j < momentsData[i].pictures.length;j++) {
+                let sp = pictures.getPicturesById(momentsData[i].pictures[j]);
+                sp.then((_resPic) => {
+                    if(momentsData[i].pictures.length > 1) {
+                        if(_resPic.length > 0) {
+                            console.log("modify data " + momentsData[i].pictures[j], _resPic[0].thumbnail);
+                            momentsData[i].pictures[j] = _resPic[0].thumbnail;
+                        }
+                    } else {
+                        if(_resPic.length > 0) {
+                            console.log("modify data " + momentsData[i].pictures[j], _resPic[0].original);
+                            momentsData[i].pictures[j] = _resPic[0].original;
+                        }
+                    }
+                });
+                arr.push(sp);
+            }
+        }
+        let promiseAll = Promise.all(arr).then(()=>{
+            return momentsData;
+        }).catch((err) => {
+            console.log(err);
+        });
+        return promiseAll;
+    }).then((value) => {
+        res.render("home", {
+            articles : value
+        });
+    }).catch((err) => {
+        console.log(err);
+    })
   
 });
 app.get("/admin_wx", function(req, res) {
@@ -156,10 +203,8 @@ app.post("/uploadPic", upload.array("file"), function(req, res) {
                         original : respInfo.original_pic,
                         md5 : "0",
                     });
-                    pictures.addPicture(pic, (_err, _res) => {
-                        if(!_err) {
-                            res.end(JSON.stringify(respInfo));
-                        }
+                    pictures.addPicture(pic).then((_res) => {
+                        res.end(JSON.stringify(respInfo));
                     });
                 }
             );
@@ -191,10 +236,8 @@ app.post("/commit", function(req, res) {
         content : req.body.content,
         pictures : req.body.pic_ids
     });
-    moments.addMoment(mo, (_err, _res) => {
-        if(!_err) {
-            res.redirect("/");
-        }
+    moments.addMoment(mo).then((_res) => {
+        res.redirect("/");
     });
 });
 

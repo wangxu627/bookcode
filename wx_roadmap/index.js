@@ -6,7 +6,13 @@ var session = require('express-session');
 var multer = require("multer");
 var gm = require("gm");
 var crypto = require("crypto");
-var moments = require("./moments");
+var mongoose = require('mongoose');
+var moments = require("./db/models/moments");
+var moments_old = require("./moments_old");
+var utils = require("./utils");
+
+DB_URL = 'mongodb://localhost:27017/roadmap'
+mongoose.connect(DB_URL);//；连接数据库
 
 var handlebars = eh.create({
     defaultLayout:"main",
@@ -60,10 +66,26 @@ var upload = multer({storage: storage});
 //var upload = multer({ dest: __dirname + "/upload" });
 
 app.get("/", function(req, res) {
-    var articles = moments.getArticles();
-    res.render("home", {
-        articles:articles,
+    var articles = moments_old.getArticles();
+    
+    moments.getAllMoments((_err, _res) => {
+        console.log(_res);
+        let momentsData = _res.map((item,index,input) => {
+            let data = {
+                _id : item._id,
+                content :item.content,
+                pictures : item.pictures.split(","),
+                __v : 0
+            };
+            return data;
+        });
+        console.log(momentsData);
+        
+        res.render("home", {
+            articles:momentsData,
+        });
     });
+ 
 });
 app.get("/admin_wx", function(req, res) {
     console.log(req.session.user);
@@ -97,7 +119,8 @@ app.post("/uploadPic", upload.array("file"), function(req, res) {
                         res.end();
                         return;
                     }
-                    let originalUrl = file.path.replace("G:\\bookcode\\bookcode\\wx_roadmap\\public\\", "http://172.17.40.147:3000/").replace("\\", "/").replace("\\", "/");
+
+                    let originalUrl = file.path.replace(__dirname + "\\public\\", "http://" + utils.getIPAdress() + ":3000/").replace("\\", "/").replace("\\", "/");
                     console.log("originalUrl ==> " + originalUrl);
                     let respInfo = {
                         "pic_id" : file.filename.split(".")[0],
@@ -131,7 +154,15 @@ app.post("/signin", function(req, res) {
 
 app.post("/commit", function(req, res) {
     console.log(JSON.stringify(req.body));
-    res.redirect("/");   
+    let mo = new moments.Moment({
+        content : req.body.content,
+        pictures : req.body.pic_ids
+    });
+    moments.addMoment(mo, (_err, _res) => {
+        if(!_err) {
+            res.redirect("/");
+        }
+    });
 });
 
 app.use(function(req, res, next) {

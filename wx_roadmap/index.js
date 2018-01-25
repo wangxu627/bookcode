@@ -8,11 +8,15 @@ var gm = require("gm");
 var crypto = require("crypto");
 var mongoose = require('mongoose');
 var moments = require("./db/models/moments");
+var pictures = require("./db/models/pictures");
 var moments_old = require("./moments_old");
 var utils = require("./utils");
+var config = require("./config");
 
-DB_URL = 'mongodb://localhost:27017/roadmap'
-mongoose.connect(DB_URL);//；连接数据库
+mongoose.connect(config.DB_URL);//；连接数据库
+mongoose.connection.on('connected', () => {
+    console.log("mongodb connnected.");
+});
 
 var handlebars = eh.create({
     defaultLayout:"main",
@@ -69,23 +73,41 @@ app.get("/", function(req, res) {
     var articles = moments_old.getArticles();
     
     moments.getAllMoments((_err, _res) => {
-        console.log(_res);
         let momentsData = _res.map((item,index,input) => {
+            let pics = item.pictures.split(",");
+            pics.forEach((element, index, array) => {
+                pictures.getPicturesById(element, (_errPic, _resPic) => {
+                    if(pics.length > 1) {
+                        if(_resPic.length > 0) {
+                            array[index] = _resPic[0].thumbnail;
+                        }
+                    } else {
+                        if(_resPic.length > 0) {
+                            array[index] = _resPic[0].original;
+                        }
+                    }
+                   
+                });
+            });
+            
             let data = {
                 _id : item._id,
-                content :item.content,
-                pictures : item.pictures.split(","),
+                content : item.content,
+                pictures : pics,
                 __v : 0
             };
             return data;
         });
-        console.log(momentsData);
-        
-        res.render("home", {
-            articles:momentsData,
-        });
+
+        setTimeout(()=>{
+            console.log(momentsData);
+            res.render("home", {
+                articles : momentsData
+            });
+        }, 800);
     });
- 
+
+  
 });
 app.get("/admin_wx", function(req, res) {
     console.log(req.session.user);
@@ -120,14 +142,25 @@ app.post("/uploadPic", upload.array("file"), function(req, res) {
                         return;
                     }
 
-                    let originalUrl = file.path.replace(__dirname + "\\public\\", "http://" + utils.getIPAdress() + ":3000/").replace("\\", "/").replace("\\", "/");
+                    let originalUrl = file.path.replace(__dirname + "\\public\\", config.FILE_SERVER).replace("\\", "/").replace("\\", "/");
                     console.log("originalUrl ==> " + originalUrl);
                     let respInfo = {
                         "pic_id" : file.filename.split(".")[0],
                         "thumbnail_pic" : originalUrl.replace("original", "thumbnail"),
                         "original_pic" : originalUrl
                     };
-                    res.end(JSON.stringify(respInfo));
+                    //res.end(JSON.stringify(respInfo));
+                    var pic = new pictures.Picture({
+                        pic_id : respInfo.pic_id,
+                        thumbnail : respInfo.thumbnail_pic,
+                        original : respInfo.original_pic,
+                        md5 : "0",
+                    });
+                    pictures.addPicture(pic, (_err, _res) => {
+                        if(!_err) {
+                            res.end(JSON.stringify(respInfo));
+                        }
+                    });
                 }
             );
         });

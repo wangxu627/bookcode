@@ -2,9 +2,9 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 var momentScheMa = new Schema({
-    content: String,
-    pictures: String,
-    date: String,
+    content:        { type : String },
+    pictures:       { type : String },
+    date:           { type : Number, default : Date.now},
 });
 var Moment = mongoose.model('moments', momentScheMa);
 

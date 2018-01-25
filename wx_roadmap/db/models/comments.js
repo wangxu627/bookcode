@@ -2,10 +2,10 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 var commentScheMa = new Schema({
-    content: String,
-    towhich : String,
-    type: String,
-    date: String,
+    content:        { type : String },
+    towhich :       { type : String },
+    type:           { type : String },
+    date:           { type : Number, default : Date.now},
 });
 var Comment = mongoose.model('comments', commentScheMa); 
 

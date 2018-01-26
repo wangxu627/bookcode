@@ -424,6 +424,16 @@ footer .copyright {
 
 
 /* new add */
+.add_btn {
+  background-image: url(../img/res/add_btn.png);
+  background-size: cover;
+  margin-top: 10px;
+  margin-right: 10px;
+  width: 30px;
+  height: 30px;
+}
+
+
 .form-signin {
   max-width: 330px;
   padding: 15px;

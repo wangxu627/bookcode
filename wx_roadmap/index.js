@@ -4,7 +4,6 @@ var bodyParser = require("body-parser");
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var multer = require("multer");
-var gm = require("gm");
 var crypto = require("crypto");
 var mongoose = require('mongoose');
 var moments = require("./db/models/moments");
@@ -70,43 +69,7 @@ var upload = multer({storage: storage});
 //var upload = multer({ dest: __dirname + "/upload" });
 
 app.get("/", function(req, res) {
-    var articles = moments_old.getArticles();
-    
-    // moments.getAllMoments((_err, _res) => {
-    //     let momentsData = _res.map((item,index,input) => {
-    //         let pics = item.pictures.split(",");
-    //         pics.forEach((element, index, array) => {
-    //             pictures.getPicturesById(element, (_errPic, _resPic) => {
-    //                 if(pics.length > 1) {
-    //                     if(_resPic.length > 0) {
-    //                         array[index] = _resPic[0].thumbnail;
-    //                     }
-    //                 } else {
-    //                     if(_resPic.length > 0) {
-    //                         array[index] = _resPic[0].original;
-    //                     }
-    //                 }
-                   
-    //             });
-    //         });
-            
-    //         let data = {
-    //             _id : item._id,
-    //             content : item.content,
-    //             pictures : pics,
-    //             __v : 0
-    //         };
-    //         return data;
-    //     });
-
-    //     setTimeout(()=>{
-    //         console.log(momentsData);
-    //         res.render("home", {
-    //             articles : momentsData
-    //         });
-    //     }, 800);
-    // });
-
+    //var articles = moments_old.getArticles();
     let p = moments.getAllMoments();
     p.then((_res) => {
         let momentsData = _res.map((item,index) => {
@@ -115,6 +78,7 @@ app.get("/", function(req, res) {
                 _id : item._id,
                 content : item.content,
                 pictures : pics,
+                post_date : utils.getFormatDateString(item.date),
                 __v : 0
             };
             return data;
@@ -128,13 +92,11 @@ app.get("/", function(req, res) {
                 sp.then((_resPic) => {
                     if(momentsData[i].pictures.length > 1) {
                         if(_resPic.length > 0) {
-                            console.log("modify data " + momentsData[i].pictures[j], _resPic[0].thumbnail);
                             momentsData[i].pictures[j] = _resPic[0].thumbnail;
                         }
                     } else {
                         if(_resPic.length > 0) {
-                            console.log("modify data " + momentsData[i].pictures[j], _resPic[0].original);
-                            momentsData[i].pictures[j] = _resPic[0].original;
+                            momentsData[i].pictures[j] = _resPic[0].bmiddle;
                         }
                     }
                 });
@@ -168,48 +130,73 @@ app.get("/login_wx", function(req, res) {
     res.render("login_wx");
 });
 app.get("/post", function(req, res) {
-    if(req.session.user) {
+    //if(req.session.user) {
         res.render("post");
-    } else {
-        res.redirect("/login_wx");
-    }
+    // } else {
+    //     res.redirect("/login_wx");
+    // }
 });
 app.post("/uploadPic", upload.array("file"), function(req, res) {
     console.log("+=======================>>> : ");
     console.log(req.files);
+    let arrPromise = [];
+    let arrResp = [];
     for(let i = 0;i < req.files.length;i++) {
         let file = req.files[i]
-        gm(file.path).autoOrient().write(file.path, function(err) {
-            console.log("err : " + err);
-            gm(file.path).thumb(80, 80, file.destination + "/../thumbnail/" + file.filename, 60, 
-                (err, stdout, stderr, command)=>{
-                    if (err) {
-                        console.log(err);
-                        res.end();
-                        return;
+        let p = utils.saveImage(file.path, file.path).then(()=> {
+                    return utils.getImageSize(file.path);
+                }).then((value) => {
+                    console.log("size is value : " + JSON.stringify(value));
+                    let baseSize = 440; // sina
+                    if(value.width < baseSize || value.height < baseSize) {
+                        console.log("insert bmiddle directly");
+                        return utils.saveImage(file.path, file.destination + "/../bmiddle/" + file.filename);
+                    } else {
+                        console.log("resize and insert bmiddle");
+                        let width = 0, height = 0;
+                        if(value.width < value.height) {
+                            ratio = value.width / baseSize;
+                            width = baseSize;
+                            height = value.height / ratio;
+                        } else {
+                            ratio = value.height / baseSize;
+                            height = baseSize;
+                            width = value.width / ratio;
+                        }
+                        return utils.resizeImage(file.path, width, height, file.destination + "/../bmiddle/" + file.filename);
                     }
-
+                }).then(() => {
+                    return utils.thumbImage(file.path, 80, 80, file.destination + "/../thumbnail/" + file.filename, 100);
+                }).then(() => {
                     let originalUrl = file.path.replace(__dirname + "\\public\\", config.FILE_SERVER).replace("\\", "/").replace("\\", "/");
                     console.log("originalUrl ==> " + originalUrl);
                     let respInfo = {
                         "pic_id" : file.filename.split(".")[0],
                         "thumbnail_pic" : originalUrl.replace("original", "thumbnail"),
+                        "bmiddle_pic" : originalUrl.replace("original", "bmiddle"),
                         "original_pic" : originalUrl
                     };
                     //res.end(JSON.stringify(respInfo));
                     var pic = new pictures.Picture({
                         pic_id : respInfo.pic_id,
                         thumbnail : respInfo.thumbnail_pic,
+                        bmiddle : respInfo.bmiddle_pic,
                         original : respInfo.original_pic,
                         md5 : "0",
                     });
-                    pictures.addPicture(pic).then((_res) => {
-                        res.end(JSON.stringify(respInfo));
+                    return pictures.addPicture(pic).then(()=>{
+                        arrResp.push(respInfo);
                     });
-                }
-            );
-        });
+                }).catch((err) => {
+                    console.log(err);
+                });;
+        arrPromise.push(p);
     }
+    Promise.all(arrPromise).then(()=>{
+        res.end(JSON.stringify(arrResp[0]));
+    }).catch(()=>{
+        res.end();
+    });
 });
 
 app.post("/signin", function(req, res) {

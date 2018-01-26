@@ -17,7 +17,7 @@ function getAllMoments() {
             } else {
                 return reject(err);
             }
-        });
+        }).sort({date:-1});
     });
 }
 

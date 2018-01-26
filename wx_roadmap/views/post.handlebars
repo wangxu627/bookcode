@@ -19,13 +19,10 @@
             uploadedIds.push(data.pic_id);
             $("#imgSingle").children().css("background-image", data.thumbnail_pic);
             var newObj = $("#imgSingle").clone(true, true);
-            {{!-- console.log(data); --}}
             newObj.id = "imgSingle1";
             newObj.css("visibility","visible");
             newObj.css("height", "auto");
             newObj.css("position", "relative");
-            console.log("http://localhost:3000/upload/thumbnail/d1f768663683fee1d16f3eef65b95c76.jpg");
-            console.log(data.thumbnail_pic);
             newObj.children().first().css("background-image", "url(" + data.thumbnail_pic + ")");
             $("#imgPanel").append(newObj);
           },
@@ -42,7 +39,6 @@
     var idx = $(obj).parent().index();
     uploadedIds.splice(idx, 1);
     $(obj).parent().remove();
-    //uploadedIds.push(data.pic_id);
   }
 
   function postMoment() {
@@ -73,7 +69,7 @@
 <!-- Main Content -->
 <div class="container">
   <div class="row">
-    <div class="col-lg-8 col-md-10 col-xs-12 mx-auto" style="margin:-40px 0px 0px;padding:0px 5px">
+    <div class="col-lg-offset-2 col-md-offset-1 col-lg-8 col-md-10 col-xs-12 mx-auto" style="margin-top:-40px;padding:0px 5px">
       <div style="width:100%;height:80px;margin:0px 0px 5px">
         <textarea id="textContent" class="form-control" style="width:100%;height:100%;border-style:none;resize:none;margin:0" placeholder="今天要说点啥..."></textarea> 
       </div>

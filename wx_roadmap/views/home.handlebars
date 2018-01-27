@@ -1,14 +1,61 @@
 <script>
+  let curPage = 1;
   function loadMore() {
-    console.log("AAAAAAAAAAAAAAAA");
+    fetch('/loadMore', {
+      method: 'POST',
+      headers: {
+        'content-type':'application/json'
+      },
+      body: JSON.stringify({
+        page: curPage,
+      }),
+      credentials: "include",
+    }).then(function (res) {　　
+      
+      if(res.status == 200) {
+        console.log(res);
+        curPage++;
+        res.text().then((text) => {
+          console.log(text);
+          addMoments(text);
+        });
+      } else {
+        alert("commit failed");
+      }
+    });
+  }
+
+  function addMoments(moments) {
+    $("#pager").before(moments)
+  }
+
+  
+  $("#backTop").ready((obj)=>{
+    let x = $("#contentContainer").offset().left + $("#contentContainer").width() - 10;
+    $("#backTop").css("left", x);
+  });
+
+  $(window).scroll(function () {  
+    if ($(window).scrollTop() > $(window).height() * 1.2) {  
+      $("#backTop").show();  
+    }
+    else if ($(window).scrollTop() == 0) {  
+      $("#backTop").hide();  
+    }
+  });
+
+  function backToTop() {
+    $("html,body").animate({scrollTop:0}, 500);
   }
 </script>
-
 
 <!-- Main Content -->
 <div class="container">
   <div class="row">
-    <div class="col-md-offset-2 col-md-8 col-xs-11 mx-auto">
+    <div id="contentContainer" class="col-md-offset-2 col-md-8 col-xs-11 mx-auto">
+      <a id="backTop" style="background-image: url(../img/res/back_top_btn.png);background-size:cover;
+      position:fixed;bottom:40px;width:40px;height:40px" onclick="backToTop()"></a>
+      
       {{#each articles}}
       <div class="post-preview">
         <a href="post.html">
@@ -42,14 +89,16 @@
           {{post_date}}
         </p>
       </div>
-      <hr> {{/each}}
+      <hr>
+      {{/each}}
 
       <!-- Pager -->
-      <div class="clearfix" style="margin-top:-10px;margin-bottom: 20px">
+      <div id="pager" class="clearfix" style="margin-top:-10px;margin-bottom: 20px">
         <div  align="center">
           <a class="btn btn-primary" style="padding: 5px 30px" onclick="loadMore()">更多</a>        
         </div>
       </div>
     </div>
   </div>
+
 </div>

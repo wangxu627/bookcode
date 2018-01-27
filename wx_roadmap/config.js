@@ -9,7 +9,8 @@ let utils = require("./utils");
 // windows office
 let config = {
     DB_URL : 'mongodb://172.17.44.19:27017/roadmap',
-    FILE_SERVER : "http://" + utils.getIPAdress() + ":3000/"
+    FILE_SERVER : "http://" + utils.getIPAdress() + ":3000/",
+    PAGE_SIZE : 20,
 }
 
 module.exports = config;

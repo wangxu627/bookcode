@@ -69,54 +69,11 @@ var upload = multer({storage: storage});
 //var upload = multer({ dest: __dirname + "/upload" });
 
 app.get("/", function(req, res) {
-    //var articles = moments_old.getArticles();
-    let p = moments.getAllMoments();
-    p.then((_res) => {
-        let momentsData = _res.map((item,index) => {
-            let pics = item.pictures.split(",");
-            let data = {
-                _id : item._id,
-                content : item.content,
-                pictures : pics,
-                post_date : utils.getFormatDateString(item.date),
-                __v : 0
-            };
-            return data;
-        });
-        return momentsData;
-    }).then((momentsData)=> {
-        let arr = [];
-        for(let i = 0;i < momentsData.length;i++) {
-            for(let j = 0;j < momentsData[i].pictures.length;j++) {
-                let sp = pictures.getPicturesById(momentsData[i].pictures[j]);
-                sp.then((_resPic) => {
-                    if(momentsData[i].pictures.length > 1) {
-                        if(_resPic.length > 0) {
-                            momentsData[i].pictures[j] = _resPic[0].thumbnail;
-                        }
-                    } else {
-                        if(_resPic.length > 0) {
-                            momentsData[i].pictures[j] = _resPic[0].bmiddle;
-                        }
-                    }
-                });
-                arr.push(sp);
-            }
-        }
-        let promiseAll = Promise.all(arr).then(()=>{
-            return momentsData;
-        }).catch((err) => {
-            console.log(err);
-        });
-        return promiseAll;
-    }).then((value) => {
+    queryMoments(0, (value)=>{
         res.render("home", {
             articles : value
         });
-    }).catch((err) => {
-        console.log(err);
-    })
-  
+    });
 });
 app.get("/admin_wx", function(req, res) {
     console.log(req.session.user);
@@ -137,8 +94,6 @@ app.get("/post", function(req, res) {
     // }
 });
 app.post("/uploadPic", upload.array("file"), function(req, res) {
-    console.log("+=======================>>> : ");
-    console.log(req.files);
     let arrPromise = [];
     let arrResp = [];
     for(let i = 0;i < req.files.length;i++) {
@@ -228,6 +183,18 @@ app.post("/commit", function(req, res) {
     });
 });
 
+app.post("/loadMore", function(req, res) {
+    console.log(JSON.stringify(req.body));
+    queryMoments(parseInt(req.body.page), (value) => {
+        console.log(value);
+        //res.end(JSON.stringify(value));
+        res.render("moment", {
+            articles : value,
+            layout : null
+        });
+    });
+});
+
 app.use(function(req, res, next) {
     res.status(404);
     res.render("404");
@@ -241,3 +208,53 @@ app.listen(3000, function() {
     console.log("Server started.");
 });
 
+// functions 
+
+function queryMoments(page, cb) {
+    let startIdx = page * config.PAGE_SIZE;
+    let p = moments.getMoments(startIdx, config.PAGE_SIZE);
+    p.then((_res) => {
+        console.log("query count : " + _res.length);
+        let momentsData = _res.map((item,index) => {
+            let pics = item.pictures.split(",");
+            let data = {
+                _id : item._id,
+                content : item.content,
+                pictures : pics,
+                post_date : utils.getFormatDateString(item.date),
+                __v : 0
+            };
+            return data;
+        });
+        return momentsData;
+    }).then((momentsData)=> {
+        let arr = [];
+        for(let i = 0;i < momentsData.length;i++) {
+            for(let j = 0;j < momentsData[i].pictures.length;j++) {
+                let sp = pictures.getPicturesById(momentsData[i].pictures[j]);
+                sp.then((_resPic) => {
+                    if(momentsData[i].pictures.length > 1) {
+                        if(_resPic.length > 0) {
+                            momentsData[i].pictures[j] = _resPic[0].thumbnail;
+                        }
+                    } else {
+                        if(_resPic.length > 0) {
+                            momentsData[i].pictures[j] = _resPic[0].bmiddle;
+                        }
+                    }
+                });
+                arr.push(sp);
+            }
+        }
+        let promiseAll = Promise.all(arr).then(()=>{
+            return momentsData;
+        }).catch((err) => {
+            console.log(err);
+        });
+        return promiseAll;
+    }).then((value) => {
+        cb(value);
+    }).catch((err) => {
+        console.log(err);
+    });
+}

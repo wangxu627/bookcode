@@ -35,7 +35,10 @@ function getIPAdress(){
 } 
 
 function getFormatDateString(stamp) {
-    let duration = Date.now() - stamp;
+    let now = Date.now() / 1000;
+    stamp = stamp / 1000;
+    console.log(now, stamp, now - stamp)
+    let duration = now - stamp;
     if(duration < 3600) {
         return Math.floor(duration / 60) + "分钟前";
     } else if(duration < 3600 * 24) {

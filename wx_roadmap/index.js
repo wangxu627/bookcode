@@ -5,18 +5,14 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var multer = require("multer");
 var crypto = require("crypto");
-var mongoose = require('mongoose');
 var moments = require("./db/models/moments");
 var pictures = require("./db/models/pictures");
 var moments_old = require("./moments_old");
 var utils = require("./utils");
 var config = require("./config");
+var dbFactory = require("./db/dbFactory");
 
-mongoose.connect(config.DB_URL);//；连接数据库
-mongoose.connection.on('connected', () => {
-    console.log("mongodb connnected.");
-});
-
+dbFactory.initDb();
 var handlebars = eh.create({
     defaultLayout:"main",
     helpers:{
@@ -71,7 +67,8 @@ var upload = multer({storage: storage});
 app.get("/", function(req, res) {
     queryMoments(0, (value)=>{
         res.render("home", {
-            articles : value
+            articles : value.value,
+            hideMore : value.count < config.PAGE_SIZE
         });
     });
 });
@@ -123,7 +120,7 @@ app.post("/uploadPic", upload.array("file"), function(req, res) {
                 }).then(() => {
                     return utils.thumbImage(file.path, 80, 80, file.destination + "/../thumbnail/" + file.filename, 100);
                 }).then(() => {
-                    let originalUrl = file.path.replace(__dirname + "\\public\\", config.FILE_SERVER).replace("\\", "/").replace("\\", "/");
+                    let originalUrl = file.path.replace(config.FILE_UPLOAD_PATH, config.FILE_SERVER).replace("\\", "/").replace("\\", "/");
                     console.log("originalUrl ==> " + originalUrl);
                     let respInfo = {
                         "pic_id" : file.filename.split(".")[0],
@@ -176,7 +173,7 @@ app.post("/commit", function(req, res) {
     console.log(JSON.stringify(req.body));
     let mo = new moments.Moment({
         content : req.body.content,
-        pictures : req.body.pic_ids
+        pictures : JSON.stringify(req.body.pic_ids)
     });
     moments.addMoment(mo).then((_res) => {
         res.redirect("/");
@@ -186,10 +183,9 @@ app.post("/commit", function(req, res) {
 app.post("/loadMore", function(req, res) {
     console.log(JSON.stringify(req.body));
     queryMoments(parseInt(req.body.page), (value) => {
-        console.log(value);
-        //res.end(JSON.stringify(value));
         res.render("moment", {
-            articles : value,
+            articles : value.value,
+            hideMore : value.count < config.PAGE_SIZE,
             layout : null
         });
     });
@@ -216,7 +212,8 @@ function queryMoments(page, cb) {
     p.then((_res) => {
         console.log("query count : " + _res.length);
         let momentsData = _res.map((item,index) => {
-            let pics = item.pictures.split(",");
+            //let pics = item.pictures.split(",");
+            let pics = JSON.parse(item.pictures);
             let data = {
                 _id : item._id,
                 content : item.content,
@@ -235,7 +232,7 @@ function queryMoments(page, cb) {
                 sp.then((_resPic) => {
                     if(momentsData[i].pictures.length > 1) {
                         if(_resPic.length > 0) {
-                            momentsData[i].pictures[j] = _resPic[0].thumbnail;
+                            momentsData[i].pictures[j] = _resPic[0].bmiddle;
                         }
                     } else {
                         if(_resPic.length > 0) {
@@ -253,7 +250,10 @@ function queryMoments(page, cb) {
         });
         return promiseAll;
     }).then((value) => {
-        cb(value);
+        moments.getMomentsCount().then((count) => {
+            console.log(value, count);
+            cb({value : value, count: count});
+        })
     }).catch((err) => {
         console.log(err);
     });

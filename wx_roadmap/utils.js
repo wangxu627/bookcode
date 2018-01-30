@@ -1,5 +1,3 @@
-var gm = require("gm");
-
 Date.prototype.Format = function (fmt) { //author: meizz 
     var o = {
         "M+": this.getMonth() + 1, //月份 
@@ -37,66 +35,18 @@ function getIPAdress(){
 function getFormatDateString(stamp) {
     let now = Date.now() / 1000;
     stamp = stamp / 1000;
-    console.log(now, stamp, now - stamp)
     let duration = now - stamp;
     if(duration < 3600) {
-        return Math.floor(duration / 60) + "分钟前";
+        return Math.max(1, Math.floor(duration / 60)) + "分钟前";
     } else if(duration < 3600 * 24) {
-        return Math.floor(duration / 3600) + "小时前";
+        return Math.max(1, Math.floor(duration / 3600)) + "小时前";
     } else {
         return (new Date(stamp)).Format("yyyy-MM-dd hh:mm:ss");
     }
 }
 
-function saveImage(path, dest) {
-    return new Promise((resolve, reject) => {
-        gm(path).autoOrient().write(dest, (err) => {
-            if(err) {
-                return reject(err);
-            }
-            return resolve();
-        });
-    });
-}
-
-function getImageSize(path) {
-    return new Promise((resolve, reject) => {
-        gm(path).size((err, value) => {
-            if(err) {
-                return reject(err);
-            }
-            return resolve(value);
-        });
-    });
-}
-
-function resizeImage(path, width, height, dest) {
-    return new Promise((resolve, reject) => {
-        gm(path).resize(width, height).write(dest, (err) => {
-            if(err) {
-                return reject(err);
-            }
-            return resolve();
-        });
-    });
-}
-
-function thumbImage(path, width, height, dest, quality) {
-    return new Promise((resolve, reject) => {
-        gm(path).thumb(width, width, dest, quality, (err, stdout, stderr, command)=>{
-            if (err) {
-                return reject(err);
-            }
-            return resolve({stdout, stderr, command});
-        });
-    });
-}
 
 module.exports = {
     getIPAdress : getIPAdress,
     getFormatDateString : getFormatDateString,
-    saveImage : saveImage,
-    resizeImage : resizeImage,
-    getImageSize : getImageSize,
-    thumbImage : thumbImage,
 }

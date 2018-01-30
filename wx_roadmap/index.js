@@ -9,6 +9,7 @@ var moments = require("./db/models/moments");
 var pictures = require("./db/models/pictures");
 var moments_old = require("./moments_old");
 var utils = require("./utils");
+var imageUtils = require("./imageUtils");
 var config = require("./config");
 var dbFactory = require("./db/dbFactory");
 
@@ -35,7 +36,7 @@ var handlebars = eh.create({
 var app = express();
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", "handlebars");
-app.set("port", 3000);
+app.set("port", config.APP_PORT);
 
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
@@ -95,14 +96,14 @@ app.post("/uploadPic", upload.array("file"), function(req, res) {
     let arrResp = [];
     for(let i = 0;i < req.files.length;i++) {
         let file = req.files[i]
-        let p = utils.saveImage(file.path, file.path).then(()=> {
-                    return utils.getImageSize(file.path);
+        let p = imageUtils.saveImage(file.path, file.path).then(()=> {
+                    return imageUtils.getImageSize(file.path);
                 }).then((value) => {
                     console.log("size is value : " + JSON.stringify(value));
                     let baseSize = 440; // sina
                     if(value.width < baseSize || value.height < baseSize) {
                         console.log("insert bmiddle directly");
-                        return utils.saveImage(file.path, file.destination + "/../bmiddle/" + file.filename);
+                        return imageUtils.saveImage(file.path, file.destination + "/../bmiddle/" + file.filename);
                     } else {
                         console.log("resize and insert bmiddle");
                         let width = 0, height = 0;
@@ -115,10 +116,10 @@ app.post("/uploadPic", upload.array("file"), function(req, res) {
                             height = baseSize;
                             width = value.width / ratio;
                         }
-                        return utils.resizeImage(file.path, width, height, file.destination + "/../bmiddle/" + file.filename);
+                        return imageUtils.resizeImage(file.path, width, height, file.destination + "/../bmiddle/" + file.filename);
                     }
                 }).then(() => {
-                    return utils.thumbImage(file.path, 80, 80, file.destination + "/../thumbnail/" + file.filename, 100);
+                    return imageUtils.thumbImage(file.path, 80, 80, file.destination + "/../thumbnail/" + file.filename, 100);
                 }).then(() => {
                     let originalUrl = file.path.replace(config.FILE_UPLOAD_PATH, config.FILE_SERVER).replace("\\", "/").replace("\\", "/");
                     console.log("originalUrl ==> " + originalUrl);
@@ -200,7 +201,7 @@ app.use(function(err, req, res, next) {
     res.status(500);
     res.render("500");
 });
-app.listen(3000, function() {
+app.listen(config.APP_PORT, function() {
     console.log("Server started.");
 });
 

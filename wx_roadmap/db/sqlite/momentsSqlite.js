@@ -30,7 +30,6 @@ function getAllMoments() {
 }
 
 function getMoments(offset, cnt) {
-    console.log("========>> : ", offset, cnt);
     return new Promise((resolve, reject) => {
         isq.getDb().all("select * from moments order by date desc limit ? offset ?", [cnt, offset], (err, rows) => {
             if(err) {
@@ -56,7 +55,6 @@ function getMomentsCount() {
 function addMoment(mo) {
     return new Promise((resolve, reject) => {
         let p = mo.getParam();
-        console.log(p);
         p.date = Date.parse(new Date());
         isq.getDb().run("insert into moments (content, pictures, date) values(?, ?, ?)", 
                         [p.content, p.pictures, p.date], (err) => {
@@ -69,20 +67,20 @@ function addMoment(mo) {
 }
 
 
-isq.openDatabase(() => {
-    // for(let i = 0;i < 100;i++) {
-    //     addMoment({
-    //         content:"hello",
-    //         pictures:"123"
-    //     }).then((res) => {
-    //         console.log(res);
-    //     });
-    // }
+// isq.openDatabase(() => {
+//     // for(let i = 0;i < 100;i++) {
+//     //     addMoment({
+//     //         content:"hello",
+//     //         pictures:"123"
+//     //     }).then((res) => {
+//     //         console.log(res);
+//     //     });
+//     // }
     
-    getMoments(0, 20).then((res) => {
-        console.log(res);
-    });
-});
+//     getMoments(0, 20).then((res) => {
+//         console.log(res);
+//     });
+// });
 
 module.exports = {
     Moment : Moment,

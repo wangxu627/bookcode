@@ -1,19 +1,22 @@
 <script type="text/javascript">
-  function login() {
+  function login(username, password) {
+    username = username || $("#inputName").val();
+    password = password || $("#inputPassword").val();
     fetch('/signin', {
       method: 'POST',
       headers: {
         'content-type':'application/json'
       },
       body: JSON.stringify({
-        username: $("#inputName").val(),
-        password: $("#inputPassword").val()
+        username: username,
+        password: password
       }),
       credentials: "include",
     }).then(function (res) {　　
       console.log(res);
       if(res.status == 200) {
          window.location.href = res.url;
+         saveUserInfo(username, password);
       } else {
         return res.text();
       }
@@ -22,6 +25,32 @@
     });
     return false;
   }
+
+  function saveUserInfo(username, password) {
+    document.cookie = "%^&" + username + "=" + password + "%^&";
+  }
+
+  function getUserInfo() {
+    console.log(document.cookie);
+    let reg = /%\^&(.*)=(.*)%\^&/;
+    let mt = document.cookie.match(reg);
+    console.log(mt);
+    if(mt.length == 3) {
+      return {
+        username : mt[1],
+        password : mt[2]
+      };
+    }
+  }
+
+  $(() => {
+    console.log("page inited");
+    let userInfo = getUserInfo();
+    console.log(userInfo);
+    if(userInfo) {
+      login(userInfo.username, userInfo.password);
+    }
+  })
 </script>
 
 <div class="container">

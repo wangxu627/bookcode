@@ -11,7 +11,6 @@
       }),
       credentials: "include",
     }).then(function (res) {　　
-      
       if(res.status == 200) {
         console.log(res);
         curPage++;
@@ -29,13 +28,6 @@
     $("#pager").before(moments)
   }
 
-  
-  $("#backTop").ready((obj)=>{
-    let x = $("#contentContainer").offset().left + $("#contentContainer").width() - 10;
-    $("#backTop").css("left", x);
-    $("#backTop").hide();
-  });
-
   $(window).scroll(function () {  
     if ($(window).scrollTop() > $(window).height() * 1.2) {  
       $("#backTop").show();  
@@ -45,9 +37,22 @@
     }
   });
 
-  function backToTop() {
-    $("html,body").animate({scrollTop:0}, 500);
-  }
+  $(() => {
+      $("#addPost").click(() => {
+        console.log("=========>>>> ");
+        window.location.href = "/post";
+      });
+
+      $("#backToTop").click(() => {
+        $("html,body").animate({scrollTop:0}, 500);
+      });
+
+      $("#backTop").ready((obj) => {
+        let x = $("#contentContainer").offset().left + $("#contentContainer").width() - 10;
+        $("#backTop").css("left", x);
+        $("#backTop").hide();
+      });
+  })
 </script>
 
 <!-- Main Content -->
@@ -55,8 +60,19 @@
   <div class="row">
     <div id="contentContainer" class="col-md-offset-2 col-md-8 col-xs-11 mx-auto">
       <a id="backTop" style="background-image: url(../img/res/back_top_btn.png);background-size:cover;
-      position:fixed;bottom:40px;width:40px;height:40px;visibility:hidden" onclick="backToTop()"></a>
+      position:fixed;bottom:40px;width:40px;height:40px;visibility:hidden"></a>
       
+      {{!-- {{#if hasLogin}} --}}
+      <div class="post-preview">
+        <div style="width:100px;height:100px;background-color:gray;margin-left:20px;color:white;position: relative;" id="addPost">
+          <div style="font-size: 90px;position: absolute;left:25px;top:50%;transform:translateY(-50%);">
+            &#43;
+          </div>
+        </div>
+      </div>
+      <hr>
+      {{!-- {{/if}} --}}
+
       {{#each articles}}
       <div class="post-preview">
         <a style="disabled">

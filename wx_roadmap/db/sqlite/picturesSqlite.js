@@ -43,6 +43,17 @@ function getPicturesById(picId) {
     });
 }
 
+function getPicturesByMd5(md5) {
+    return new Promise((resolve, reject) => {
+        isq.getDb().all("select * from pictures where md5 = ?", [md5], (err, rows) => {
+            if(err) {
+                return reject(err);
+            }
+            return resolve(rows);
+        });
+    });
+}
+
 function addPicture(mo) {
     return new Promise((resolve, reject) => {
         let p = mo.getParam();
@@ -52,17 +63,6 @@ function addPicture(mo) {
                 return reject(err);
             }
             return resolve("success");
-        });
-    });
-}
-
-function checkIdentity(md5) {
-    return new Promise((resolve, reject) => {
-        isq.getDb().all("select * from pictures where md5 = ?", [md5], (err, rows) => {
-            if(err) {
-                return reject(err);
-            }
-            return resolve(rows);
         });
     });
 }
@@ -107,7 +107,7 @@ module.exports = {
     Picture : Picture,
     getAllPictures : getAllPictures,
     getPicturesById : getPicturesById,
+    getPicturesByMd5 : getPicturesByMd5,    
     addPicture : addPicture,
-    checkIdentity : checkIdentity,
     updatePictureById : updatePictureById
 }

@@ -1,3 +1,6 @@
+const crypto = require("crypto");
+const fs = require("fs");
+
 Date.prototype.Format = function (fmt) { //author: meizz 
     var o = {
         "M+": this.getMonth() + 1, //月份 
@@ -32,21 +35,27 @@ function getIPAdress(){
     }  
 } 
 
-function getFormatDateString(stamp) {
-    let now = Date.now() / 1000;
-    stamp = stamp / 1000;
+function getFormatDateString(stampMS) {
+    let now = Math.floor(Date.now() / 1000);
+    let stamp = Math.floor(stampMS / 1000);
     let duration = now - stamp;
-    if(duration < 3600) {
+    if(duration < 60 * 60) {
         return Math.max(1, Math.floor(duration / 60)) + "分钟前";
     } else if(duration < 3600 * 24) {
         return Math.max(1, Math.floor(duration / 3600)) + "小时前";
     } else {
-        return (new Date(stamp)).Format("yyyy-MM-dd hh:mm:ss");
+        return (new Date(stampMS)).Format("yyyy-MM-dd hh:mm:ss");
     }
 }
 
+function calcFileMD5(path) {
+    let data = fs.readFileSync(path);
+    let md5 = crypto.createHash("md5");
+    return md5.update(data).digest("hex");
+}
 
 module.exports = {
     getIPAdress : getIPAdress,
     getFormatDateString : getFormatDateString,
+    calcFileMD5 : calcFileMD5,
 }

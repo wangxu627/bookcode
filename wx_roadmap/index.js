@@ -1,17 +1,18 @@
-var express = require("express");
-var eh = require("express-handlebars");
-var bodyParser = require("body-parser");
-var cookieParser = require('cookie-parser');
-var session = require('express-session');
-var multer = require("multer");
-var crypto = require("crypto");
-var moments = require("./db/models/moments");
-var pictures = require("./db/models/pictures");
-var moments_old = require("./moments_old");
-var utils = require("./utils");
-var imageUtils = require("./imageUtils");
-var config = require("./config");
-var dbFactory = require("./db/dbFactory");
+const express = require("express");
+const eh = require("express-handlebars");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const multer = require("multer");
+const crypto = require("crypto");
+const fs = require("fs");
+const moments = require("./db/models/moments");
+const pictures = require("./db/models/pictures");
+const moments_old = require("./moments_old");
+const utils = require("./utils");
+const imageUtils = require("./imageUtils");
+const config = require("./config");
+const dbFactory = require("./db/dbFactory");
 
 dbFactory.initDb();
 var handlebars = eh.create({
@@ -69,7 +70,8 @@ app.get("/", function(req, res) {
     queryMoments(0, (value)=>{
         res.render("home", {
             articles : value.value,
-            hideMore : value.count < config.PAGE_SIZE
+            hideMore : value.count < config.PAGE_SIZE,
+            hasLogin : req.session.user != null
         });
     });
 });
@@ -85,21 +87,31 @@ app.get("/login_wx", function(req, res) {
     res.render("login_wx");
 });
 app.get("/post", function(req, res) {
-    //if(req.session.user) {
+    if(req.session.user) {
         res.render("post");
-    // } else {
-    //     res.redirect("/login_wx");
-    // }
+    } else {
+        req.session.redirectPost = true;
+        req.session.save((err)=>{
+            res.redirect("/login_wx");      
+        });
+    }
 });
+
+// app.post("/uploadPic", upload.array("file"), function(req, res) {
+//     console.log("AAAAAAAAAAAAAAAAAAAAAAAAA");
+// });
+
 app.post("/uploadPic", upload.array("file"), function(req, res) {
     let arrPromise = [];
     let arrResp = [];
     for(let i = 0;i < req.files.length;i++) {
-        let file = req.files[i]
-        let p = imageUtils.saveImage(file.path, file.path).then(()=> {
+        let file = req.files[i];
+        let md5Value = utils.calcFileMD5(file.path);
+        let p = pictures.getPicturesByMd5(md5Value).then((rows) => {
+            if(rows.length == 0) {
+                return imageUtils.saveImage(file.path, file.path).then(()=> {
                     return imageUtils.getImageSize(file.path);
                 }).then((value) => {
-                    console.log("size is value : " + JSON.stringify(value));
                     let baseSize = 440; // sina
                     if(value.width < baseSize || value.height < baseSize) {
                         console.log("insert bmiddle directly");
@@ -135,34 +147,55 @@ app.post("/uploadPic", upload.array("file"), function(req, res) {
                         thumbnail : respInfo.thumbnail_pic,
                         bmiddle : respInfo.bmiddle_pic,
                         original : respInfo.original_pic,
-                        md5 : "0",
+                        md5 : md5Value,
                     });
                     return pictures.addPicture(pic).then(()=>{
                         arrResp.push(respInfo);
                     });
-                }).catch((err) => {
-                    console.log(err);
-                });;
+                });
+            } else {
+                console.log(rows[0].pic_id, file.filename);
+                if(!file.filename.startsWith(rows[0].pic_id)) {
+                    console.log("delete file.path")
+                    fs.unlink(file.path, (err) => {
+                        if(err) { console.log("delete error"); }
+                    });
+                }
+                let respInfo = {
+                    "pic_id" : rows[0].pic_id,
+                    "thumbnail_pic" : rows[0].thumbnail,
+                    "bmiddle_pic" : rows[0].bmiddle,
+                    "original_pic" : rows[0].original
+                };
+                arrResp.push(respInfo);
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
         arrPromise.push(p);
     }
     Promise.all(arrPromise).then(()=>{
         res.end(JSON.stringify(arrResp[0]));
-    }).catch(()=>{
+    }).catch((err)=>{
+        console.log(err);
         res.end();
     });
 });
 
 app.post("/signin", function(req, res) {
-    console.log("req ::::: " + JSON.stringify(req.body));
     if(req.body.username == "wangxu" && req.body.password == "123456") {
-        //res.header("Access-Control-Allow-Credentials", "true");
-        var user={
-           logined:1
+        let user = {
+           logined : 1
         }
-        req.session.user=user;
+        let redirectPost = req.session.redirectPost;
+        req.session.user = user;
+        req.session.redirectPost = null;
         req.session.save((err)=>{
-            console.log("err : " + err);
-            res.redirect("/");        
+            if(redirectPost) {
+                res.redirect("/post");
+            } else {
+                res.redirect("/");
+            }
         });
     } else {
         res.status(400);
@@ -187,6 +220,7 @@ app.post("/loadMore", function(req, res) {
         res.render("moment", {
             articles : value.value,
             hideMore : value.count < config.PAGE_SIZE,
+            hasLogin : req.session.user != null,
             layout : null
         });
     });
@@ -211,7 +245,6 @@ function queryMoments(page, cb) {
     let startIdx = page * config.PAGE_SIZE;
     let p = moments.getMoments(startIdx, config.PAGE_SIZE);
     p.then((_res) => {
-        console.log("query count : " + _res.length);
         let momentsData = _res.map((item,index) => {
             //let pics = item.pictures.split(",");
             let pics = JSON.parse(item.pictures);
@@ -252,7 +285,6 @@ function queryMoments(page, cb) {
         return promiseAll;
     }).then((value) => {
         moments.getMomentsCount().then((count) => {
-            console.log(value, count);
             cb({value : value, count: count});
         })
     }).catch((err) => {

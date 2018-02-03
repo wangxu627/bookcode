@@ -28,12 +28,67 @@
     $("#pager").before(moments)
   }
 
+  function deleteMoment(obj) {
+    fetch('/delete', {
+      method: 'POST',
+      headers: {
+        'content-type':'application/json'
+      },
+      body: JSON.stringify({
+        id: $(obj).attr("name"),
+      }),
+      credentials: "include",
+    }).then((res) => {　　
+      if(res.status == 200) {
+        $(obj).parent().parent().remove();
+      }
+    }).catch((err) => {
+      console.log(err);
+    });
+  }
+
+  function showGallery(obj, type) {
+    console.log("===========>>>>> showGallery");
+    //ScaleSlider();
+    //$("#imageViewer").show();
+    //console.log($("#imageViewer").("#imageScroller");
+    console.log(type);
+    if(type == 1) {
+      addImageToGallery([$(obj).attr("src")])
+    } else if(type == 2) {
+      let idx = $(obj).index();
+      let thisUrl = $(obj).children("div").css("background-image");
+      let otherUrls = $(obj).siblings().children("div").css("background-image").split(" ");
+      console.log(otherUrls);
+      console.log($(this).scrollTop());
+      let urls = [];
+      for(let i = 0;i < idx;i++) {
+        urls.push(otherUrls[i].substr(5, otherUrls[i].length - 7));
+      }
+      urls.push(thisUrl.substr(5, thisUrl.length - 7));
+      for(let i = idx;i < otherUrls.length;i++) {
+        urls.push(otherUrls[i].substr(5, otherUrls[i].length - 7));
+      }
+      addImageToGallery(urls);
+    }
+    document.documentElement.style.overflow = "hidden";
+  }
+
+  function addImageToGallery(images) {
+    console.log(images);
+    $("#imageViewer").show();
+
+    for(let url of images) {
+    //  $('<div style="width:640px;height:960px"><img data-u="image" src="' + url + '" /></div>').appendTo($("#imageScroller"));
+    }
+  }
+
   $(window).scroll(function () {  
     if ($(window).scrollTop() > $(window).height() * 1.2) {  
-      $("#backTop").show();  
+      $("#backTop").show();
     }
     else if ($(window).scrollTop() == 0) {  
-      $("#backTop").hide();  
+      $("#backTop").hide();
     }
   });
 
@@ -83,12 +138,12 @@
           <div class="container">
             {{#equals pictures/length 1}}
              {{#each pictures}}
-              <img src="{{this}}" style="width:100%; max-width:180px;" /> 
+              <img src="{{this}}" style="width:100%; max-width:180px;" onclick="showGallery(this, 1)"/> 
              {{/each}}
             {{else}}
             <div class="row col-xs-12 col-sm-10 col-md-5">
               {{#each pictures}}
-              <div class="col-xs-4 col-sm-4 col-md-4" style="padding-left:0px;padding-right:5px;padding-bottom:5px">
+              <div class="col-xs-4 col-sm-4 col-md-4" style="padding-left:0px;padding-right:5px;padding-bottom:5px" onclick="showGallery(this, 2)">
                 <div style="width: 100%;height: 0px;padding-bottom: 100%;overflow:hidden;margin: 0;position:relative;
                         background-image: url({{this}});background-size: cover;background-position:center center">
                 </div>
@@ -99,11 +154,18 @@
           </div>
           {{/if}}
         </a>
-        <p class="post-meta">
-          {{post_date}}
-        </p>
+        <div style="display:flex;margin-top:5px">
+          <p class="post-meta">
+            {{post_date}}
+          </p>
+          {{#if ../hasLogin}}
+          <a id="btn" class="post-meta" onclick="deleteMoment(this)" name="{{id}}">
+            删除
+          </a>
+          {{/if}}
+        </div>
+        <hr style="margin-top:5px">
       </div>
-      <hr>
       {{/each}}
 
       <!-- Pager -->

@@ -66,6 +66,17 @@ function addMoment(mo) {
     });
 }
 
+function removeMomentById(id) {
+    return new Promise((resolve, reject) => {
+        isq.getDb().run("delete from moments where id = ?", [id], (err) => {
+            if(err) {
+            return reject(err);
+            }
+            return resolve("success");
+        });
+    });
+}
+
 
 // isq.openDatabase(() => {
 //     // for(let i = 0;i < 100;i++) {
@@ -87,5 +98,6 @@ module.exports = {
     getAllMoments : getAllMoments,
     getMoments : getMoments,
     getMomentsCount : getMomentsCount,
-    addMoment : addMoment
+    addMoment : addMoment,
+    removeMomentById : removeMomentById
 }

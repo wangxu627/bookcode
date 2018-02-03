@@ -97,9 +97,17 @@ app.get("/post", function(req, res) {
     }
 });
 
-// app.post("/uploadPic", upload.array("file"), function(req, res) {
-//     console.log("AAAAAAAAAAAAAAAAAAAAAAAAA");
-// });
+app.post("/delete", function(req, res) {
+    console.log("delete id : " + req.body.id);
+    let id = req.body.id;
+    if(id) {
+        moments.removeMomentById(id).then((status) => {
+            if(status == "success") {
+                res.end();
+            }
+        });
+    }
+});
 
 app.post("/uploadPic", upload.array("file"), function(req, res) {
     let arrPromise = [];
@@ -249,11 +257,10 @@ function queryMoments(page, cb) {
             //let pics = item.pictures.split(",");
             let pics = JSON.parse(item.pictures);
             let data = {
-                _id : item._id,
+                id : item.id,
                 content : item.content,
                 pictures : pics,
                 post_date : utils.getFormatDateString(item.date),
-                __v : 0
             };
             return data;
         });
@@ -284,6 +291,7 @@ function queryMoments(page, cb) {
         });
         return promiseAll;
     }).then((value) => {
+        console.log(JSON.stringify(value));
         moments.getMomentsCount().then((count) => {
             cb({value : value, count: count});
         })

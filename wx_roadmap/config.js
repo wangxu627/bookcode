@@ -27,6 +27,6 @@ let configServerOffice = {
     SQLITE_PATH : "./db/sqlite/roadmap.db",
 }
 
-module.exports = configServerOffice;
+module.exports = configWindowsOffice;
 
 

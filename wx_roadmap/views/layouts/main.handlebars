@@ -4,8 +4,7 @@
 <head>
 
     <meta charset="utf-8">
-
-    <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="viewport" content="initial-scale=1.0,user-scalable=no,,minimum-scale=1,maximum-scale=1,width=device-width">
     <meta name="description" content="">
     <meta name="author" content="">
 
@@ -24,9 +23,71 @@
     <!-- Custom styles for this template -->
     <link href="css/clean-blog.css" rel="stylesheet">
     <script src="vendor/jquery/jquery-3.3.1/jquery.js"></script>
-    <script src="js/jssor.slider.min.js"></script> 
-
     <script type="text/javascript">
+        var freezeVp = function(e) {
+            e.preventDefault();
+        };
+
+        function stopBodyScrolling (bool) {
+            if (bool === true) {
+                document.body.addEventListener("touchmove", freezeVp, false);
+            } else {
+                document.body.removeEventListener("touchmove", freezeVp, false);
+            }
+        }
+
+        window.onload=function () {  
+            document.addEventListener('touchstart',function (event) {  
+                if(event.touches.length>1){  
+                    event.preventDefault();  
+                }  
+            })  
+            var lastTouchEnd=0;  
+            document.addEventListener('touchend',function (event) {  
+                var now=(new Date()).getTime();  
+                if(now-lastTouchEnd<=300){  
+                    event.preventDefault();  
+                }  
+                lastTouchEnd=now;  
+            },false)  
+        }  
+
+        /**
+        * 替换所有匹配exp的字符串为指定字符串
+        * @param exp 被替换部分的正则
+        * @param newStr 替换成的字符串
+        */
+        String.prototype.replaceAll = function (exp, newStr) {
+            return this.replace(new RegExp(exp, "gm"), newStr);
+        };
+
+        /**
+        * 原型：字符串格式化
+        * @param args 格式化参数值
+        */
+        String.prototype.format = function(args) {
+            var result = this;
+            if (arguments.length < 1) {
+                return result;
+            }
+
+            var data = arguments; // 如果模板参数是数组
+            if (arguments.length == 1 && typeof (args) == "object") {
+                // 如果模板参数是对象
+                data = args;
+            }
+            for ( var key in data) {
+                var value = data[key];
+                if (undefined != value) {
+                    result = result.replaceAll("\\{" + key + "\\}", value);
+                }
+            }
+            return result;
+        }
+    </script>
+    {{!-- <script src="js/jssor.slider.min.js"></script>  --}}
+
+    {{!-- <script type="text/javascript">
         jQuery(document).ready(function ($) {
 
             var jssor_1_options = {
@@ -150,6 +211,86 @@
         .jssora051:hover {opacity:.8;}
         .jssora051.jssora051dn {opacity:.5;}
         .jssora051.jssora051ds {opacity:.3;pointer-events:none;}
+    </style> --}}
+
+    <style>
+        .J-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #000;
+        }
+
+        .J-slider .wrapper {
+            float: left;
+            z-index: 1;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .J-slider .scroller {
+            z-index: 1;
+        }
+
+        .J-slider .ctrlbar {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            z-index: 99;
+            width: 100%;
+            line-height: 30px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .J-slider #J-zan {
+            float: right;
+            margin: 0 15px 0 0;
+        }
+
+        .J-slider .ctrlbar a {
+            display: block;
+            width: 72px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-size: 16px;
+            color: #fff;
+            background: rgba(128,128,128,.4);
+            -webkit-box-shadow: 0 0 1px rgba(0,0,0,.3) inset;
+            box-shadow: 0 0 1px rgba(0,0,0,.3) inset;
+            border-radius: 2px;
+            -webkit-border-radius: 2px;
+        }
+
+        .J-slider #J-close {
+            float: left;
+            margin: 0 0 0 15px;
+        }
+
+        .J-slider .ctrlbar a {
+            display: block;
+            width: 72px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-size: 16px;
+            color: #fff;
+            background: rgba(128,128,128,.4);
+            -webkit-box-shadow: 0 0 1px rgba(0,0,0,.3) inset;
+            box-shadow: 0 0 1px rgba(0,0,0,.3) inset;
+            border-radius: 2px;
+            -webkit-border-radius: 2px;
+        }
+
+        .J-slider .scroller img {
+            max-width: 100%;
+            vertical-align: middle;
+            opacity: 0;
+            -webkit-transition: opacity .3s ease-out;
+        }
     </style>
 </head>
 
@@ -233,14 +374,31 @@
 
     {{{body}}}
 
-    <div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;background-color:#000;" id="imageViewer">
+    {{!-- <div class="J-slider" style="position: absolute; margin: auto; overflow: hidden;">
+        <div id="J-slider-cont" style="position: relative; top: 0px; left: 0px; width: 602px; height: 887px; transform: translate(0px, 0px) translateZ(0px);">
+            <div id="J-wrapper1" class="wrapper " style="-webkit-transform:translate3d(0,0,0);width:602px;height:887px" zannum="15" zanliked="false">
+                <div id="J-scroller1" class="scroller" style="transform-origin: 0px 0px 0px; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); transition-duration: 0ms; transform: translate(0px, 0px) scale(1) translateZ(0px); line-height: 887px;">
+                    <img src="http://wx4.sinaimg.cn/large/61e36371ly1fo4dx8aqaqj20dh080mxy.jpg" style="opacity: 1;">
+                </div>
+            </div>
+        </div>
+        <div class="ctrlbar" style="position:absolute">
+            <a id="J-zan" href="javascript:;" class="">
+                <i class="icon animated  icon-like"></i>
+                <span id="J-zan-text" class="zan" style="display: none;">赞</span>
+                <span id="J-zan-count" data-num="0" style="">15</span>
+            </a>
+            <a id="J-close" href="javascript:;">关闭</a>
+        </div>
+    </div> --}}
+    {{!-- <div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;background-color:#000;" id="imageViewer">
         <div id="jssor_1" style="position:relative;margin:0 auto;top:0px;left:0px;width:640px;height:960px;overflow:hidden;visibility:hidden;">
             <!-- Loading Screen -->
             <div data-u="loading" class="jssorl-009-spin" style="position:absolute;top:0px;left:0px;width:100%;height:100%;text-align:center;background-color:rgba(0,0,0,0.7);">
                 <img style="margin-top:-19px;position:relative;top:50%;width:38px;height:38px;" src="svg/loading/static-svg/spin.svg" />
             </div>
             <div id="imageScroller" data-u="slides" style="cursor:default;position:relative;top:0px;left:0px;width:640px;height:960px;overflow:hidden;">
-                {{!-- <div>
+                <div>
                     <img data-u="image" src="gallery/640x960/001.jpg" />
                 </div>
                 <div>
@@ -263,7 +421,7 @@
                 </div>
                 <div>
                     <img data-u="image" src="gallery/640x960/008.jpg" />
-                </div> --}}
+                </div>
             </div>
             <!-- Bullet Navigator -->
             <div data-u="navigator" class="jssorb064" style="position:absolute;bottom:12px;right:12px;" data-autocenter="1" data-scale="0.5" data-scale-bottom="0.75">
@@ -285,7 +443,7 @@
                 </svg>
             </div>
         </div>
-    </div>
+    </div> --}}
 
 
     {{!-- <hr>

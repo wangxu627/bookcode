@@ -22,6 +22,8 @@ Date.prototype.Format = function (fmt) { //author: meizz
     return fmt;
 }
 
+
+
 function getIPAdress(){  
     let interfaces = require('os').networkInterfaces();  
     for(let devName in interfaces){  

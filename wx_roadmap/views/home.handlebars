@@ -47,17 +47,48 @@
     });
   }
 
+  function closeGallery() {
+    console.log("galleryContainer");
+    $("#galleryContainer").remove();
+
+    document.documentElement.style.overflow = "scroll";
+    stopBodyScrolling(false);
+  }
+
+  function showG(url) {
+    let fmt = '<div id="galleryContainer" class="J-slider" style="position: absolute; margin: auto; overflow: hidden;top: {2}px; bottom: -{2}px">\
+        <div id="J-slider-cont" style="position: relative; top: 0px; left: 0px; width: {0}px; height: {1}px; transform: translate(0px, 0px) translateZ(0px);">\
+            <div id="J-wrapper1" class="wrapper " style="-webkit-transform:translate3d(0,0,0);width:{0}px;height:{1}px" zannum="15" zanliked="false">\
+                <div id="J-scroller1" class="scroller" style="transform-origin: 0px 0px 0px; transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); transition-duration: 0ms; transform: translate(0px, 0px) scale(1) translateZ(0px); line-height: {1}px;">\
+                    <img src="{3}" style="opacity: 1;">\
+                </div>\
+            </div>\
+        </div>\
+        <div class="ctrlbar" style="position:absolute">\
+            <a id="J-close" onclick="closeGallery()">关闭</a>\
+        </div>\
+    </div>';
+    
+    console.log($(window).scrollTop(), $(window).width(),  $("body").scrollTop());
+    //alert(window.innerWidth +  "    " + window.innerHeight + "  " + $(window).scrollTop());
+    let divHtml = fmt.format($(window).width(), $(window).height(), $(window).scrollTop(), url);
+    console.log(divHtml);
+    
+    $("body").append($(divHtml));
+  }
+
   function showGallery(obj, type) {
+    //showG();
+    //return;
     console.log("===========>>>>> showGallery");
-    //ScaleSlider();
-    //$("#imageViewer").show();
-    //console.log($("#imageViewer").("#imageScroller");
-    console.log(type);
     if(type == 1) {
-      addImageToGallery([$(obj).attr("src")])
+      //addImageToGallery([$(obj).attr("src")])
+      showG($(obj).attr("src"));
     } else if(type == 2) {
       let idx = $(obj).index();
       let thisUrl = $(obj).children("div").css("background-image");
+      showG(thisUrl);
+      /*
       let otherUrls = $(obj).siblings().children("div").css("background-image").split(" ");
       console.log(otherUrls);
       console.log($(this).scrollTop());
@@ -70,8 +101,11 @@
         urls.push(otherUrls[i].substr(5, otherUrls[i].length - 7));
       }
       addImageToGallery(urls);
+      */
     }
     document.documentElement.style.overflow = "hidden";
+    stopBodyScrolling(true);
+
   }
 
   function addImageToGallery(images) {
